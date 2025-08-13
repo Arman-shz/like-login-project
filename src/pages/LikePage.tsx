@@ -1,21 +1,28 @@
 import { useRecoilState, useRecoilValue } from "recoil";
 import { likeCountAtom, userAtom } from "../states";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function LikePage() {
   const user = useRecoilValue(userAtom);
   const [likeCount, setLikeCount] = useRecoilState(likeCountAtom);
   const [hearts, setHearts] = useState<{ id: number; left: number }[]>([]);
+  const [isRed, setIsRed] = useState(false);
+  const navigate = useNavigate();
 
+  // جلوگیری از برگشت به لاگین
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (!user && storedUser) {
-      // در صورت ریفرش صفحه کاربر را از لوکال استورج برگردان
+    if (!storedUser) {
+      navigate("/", { replace: true });
     }
-  }, []);
+  }, [navigate]);
 
   const handleLike = () => {
     setLikeCount(likeCount + 1);
+    setIsRed(true);
+    setTimeout(() => setIsRed(false), 300);
+
     const id = Date.now();
     setHearts([...hearts, { id, left: Math.random() * 80 + 10 }]);
     setTimeout(() => {
@@ -24,15 +31,17 @@ export default function LikePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-pink-400 to-red-500 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-pink-400 via-red-400 to-purple-500 relative overflow-hidden">
       <h2 className="text-white text-2xl font-bold mb-4">
         خوش آمدید {user?.firstName} {user?.lastName}
       </h2>
       <div
-        className="text-9xl cursor-pointer select-none transition-colors"
+        className={`text-9xl cursor-pointer select-none transition-colors duration-300 ${
+          isRed ? "text-red-500" : "text-white"
+        }`}
         onClick={handleLike}
       >
-        ❤️
+        ❤
       </div>
       <p className="text-white mt-4 text-lg">تعداد لایک‌ها: {likeCount}</p>
 
@@ -42,7 +51,7 @@ export default function LikePage() {
           className="absolute text-red-500 text-4xl animate-float"
           style={{ left: `${heart.left}%`, bottom: "20%" }}
         >
-          ❤️
+          ❤
         </span>
       ))}
 
