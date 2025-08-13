@@ -1,7 +1,15 @@
-import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import LikePage from "./pages/LikePage";
 
-function App() {
-  return (<h1 className='bg-slate-500'>arman</h1>);
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/like" element={<LikePage />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App;
