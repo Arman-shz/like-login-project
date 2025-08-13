@@ -1,14 +1,11 @@
-import { useRecoilState, useRecoilValue } from "recoil";
-import { likeCountAtom, userAtom } from "../states";
+import { useRecoilValue } from "recoil";
+import { userAtom } from "../states";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function LikePage() {
   const user = useRecoilValue(userAtom);
-  const [likeCount, setLikeCount] = useRecoilState(likeCountAtom);
-  const [hearts, setHearts] = useState<{ id: number; x: number; y: number }[]>(
-    []
-  );
+  const [hearts, setHearts] = useState<{ id: number; y: number }[]>([]);
   const [isRed, setIsRed] = useState(false);
   const heartRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
@@ -19,61 +16,64 @@ export default function LikePage() {
     }
   }, [navigate]);
 
-  const handleLike = () => {
-    setLikeCount(likeCount + 1);
+  const handleLike = (e: React.MouseEvent) => {
+    if (heartRef.current) {
+      const rect = heartRef.current.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+
+      if (clickX > rect.width / 2) {
+       
+        heartRef.current.style.transform = "rotateY(180deg) scale(1.1)";
+      } else {
+        
+        heartRef.current.style.transform = "rotateY(-180deg) scale(1.1)";
+      }
+
+      setTimeout(() => {
+        if (heartRef.current) {
+          heartRef.current.style.transform = "";
+        }
+      }, 400);
+    }
+
     setIsRed(true);
     setTimeout(() => setIsRed(false), 200);
 
-    if (heartRef.current) {
-      const rect = heartRef.current.getBoundingClientRect();
-      const id = Date.now();
-      setHearts((prev) => [
-        ...prev,
-        {
-          id,
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2,
-        },
-      ]);
-      setTimeout(() => {
-        setHearts((prev) => prev.filter((h) => h.id !== id));
-      }, 1000);
-    }
+    const id = Date.now();
+    setHearts((prev) => [...prev, { id, y: 0 }]);
+    setTimeout(() => {
+      setHearts((prev) => prev.filter((h) => h.id !== id));
+    }, 800);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-pink-500 via-red-500 to-purple-600 relative overflow-hidden">
-      <h2 className="text-white text-2xl font-bold mb-4 drop-shadow-lg">
+    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-tr from-pink-400 via-red-400 to-purple-500">
+      <h2 className="text-white text-2xl font-bold mb-6 drop-shadow-lg">
         خوش آمدید {user?.firstName} {user?.lastName}
       </h2>
 
       <div
         ref={heartRef}
-        className={`heart-3d text-9xl cursor-pointer select-none transition-all duration-200 ${
+        className={`heart-3d text-9xl cursor-pointer select-none transition-all duration-300 ${
           isRed ? "text-red-500" : "text-white"
         }`}
         style={{
-          textShadow: "0 4px 6px rgba(0,0,0,0.3), 0 0 15px rgba(255,0,0,0.4)",
+          textShadow: "0 6px 12px rgba(0,0,0,0.3), 0 0 20px rgba(255,0,0,0.5)",
           filter: "drop-shadow(0 0 10px rgba(255,255,255,0.4))",
-          transform: isRed ? "scale(1.1) rotate(-2deg)" : "scale(1)",
         }}
         onClick={handleLike}
       >
         ❤
       </div>
 
-      <p className="text-white mt-4 text-lg drop-shadow-md">
-        تعداد لایک‌ها: {likeCount}
-      </p>
-
       {hearts.map((heart) => (
         <span
           key={heart.id}
           className="absolute text-red-500 text-4xl animate-float"
           style={{
-            left: `${heart.x}px`,
-            top: `${heart.y}px`,
-            transform: "translate(-50%, -50%)",
+            left: "50%",
+            bottom: "50%",
+            transform: "translateX(-50%)",
             filter: "drop-shadow(0 0 5px rgba(255,0,0,0.6))",
           }}
         >
@@ -83,17 +83,19 @@ export default function LikePage() {
 
       <style>{`
         @keyframes float {
-          0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
-          100% { transform: translate(-50%, -250px) scale(1.4) rotate(15deg); opacity: 0; }
+          0% { transform: translateX(-50%) translateY(0) scale(1) rotate(0deg); opacity: 1; }
+          100% { transform: translateX(-50%) translateY(-200px) scale(1.3) rotate(20deg); opacity: 0; }
         }
         .animate-float {
-          animation: float 0.7s ease-out forwards;
+          animation: float 0.6s ease-out forwards;
+        }
+        .heart-3d {
+          perspective: 800px;
         }
         .heart-3d:hover {
-          transform: scale(1.2) rotate(5deg) translateZ(20px);
-          text-shadow: 0 8px 12px rgba(0,0,0,0.4), 0 0 25px rgba(255,0,0,0.8), 0 0 35px rgba(255,100,100,0.8);
-          filter: drop-shadow(0 0 15px rgba(255,0,0,0.8));
-          transition: all 0.2s ease;
+          transform: scale(1.15) rotateX(15deg) rotateZ(-5deg);
+          text-shadow: 0 8px 16px rgba(0,0,0,0.4), 0 0 30px rgba(255,0,0,0.8);
+          filter: drop-shadow(0 0 20px rgba(255,0,0,0.8));
         }
       `}</style>
     </div>
