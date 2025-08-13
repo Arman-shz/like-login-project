@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function LikePage() {
   const user = useRecoilValue(userAtom);
-  const [hearts, setHearts] = useState<{ id: number; y: number }[]>([]);
+  const [hearts, setHearts] = useState<{ id: number }[]>([]);
   const [isRed, setIsRed] = useState(false);
   const heartRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
@@ -22,25 +22,19 @@ export default function LikePage() {
       const clickX = e.clientX - rect.left;
 
       if (clickX > rect.width / 2) {
-       
-        heartRef.current.style.transform = "rotateY(180deg) scale(1.1)";
+        heartRef.current.classList.add("rotate-y");
+        setTimeout(() => heartRef.current?.classList.remove("rotate-y"), 400);
       } else {
-        
-        heartRef.current.style.transform = "rotateY(-180deg) scale(1.1)";
+        heartRef.current.classList.add("rotate-y-left");
+        setTimeout(() => heartRef.current?.classList.remove("rotate-y-left"), 400);
       }
-
-      setTimeout(() => {
-        if (heartRef.current) {
-          heartRef.current.style.transform = "";
-        }
-      }, 400);
     }
 
     setIsRed(true);
     setTimeout(() => setIsRed(false), 200);
 
     const id = Date.now();
-    setHearts((prev) => [...prev, { id, y: 0 }]);
+    setHearts((prev) => [...prev, { id }]);
     setTimeout(() => {
       setHearts((prev) => prev.filter((h) => h.id !== id));
     }, 800);
@@ -56,11 +50,7 @@ export default function LikePage() {
         ref={heartRef}
         className={`heart-3d text-9xl cursor-pointer select-none transition-all duration-300 ${
           isRed ? "text-red-500" : "text-white"
-        }`}
-        style={{
-          textShadow: "0 6px 12px rgba(0,0,0,0.3), 0 0 20px rgba(255,0,0,0.5)",
-          filter: "drop-shadow(0 0 10px rgba(255,255,255,0.4))",
-        }}
+        } drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]`}
         onClick={handleLike}
       >
         ❤
@@ -69,35 +59,11 @@ export default function LikePage() {
       {hearts.map((heart) => (
         <span
           key={heart.id}
-          className="absolute text-red-500 text-4xl animate-float"
-          style={{
-            left: "50%",
-            bottom: "50%",
-            transform: "translateX(-50%)",
-            filter: "drop-shadow(0 0 5px rgba(255,0,0,0.6))",
-          }}
+          className="absolute left-1/2 bottom-1/2 -translate-x-1/2 text-red-500 text-4xl animate-heartFloat drop-shadow-[0_0_5px_rgba(255,0,0,0.6)]"
         >
           ❤
         </span>
       ))}
-
-      <style>{`
-        @keyframes float {
-          0% { transform: translateX(-50%) translateY(0) scale(1) rotate(0deg); opacity: 1; }
-          100% { transform: translateX(-50%) translateY(-200px) scale(1.3) rotate(20deg); opacity: 0; }
-        }
-        .animate-float {
-          animation: float 0.6s ease-out forwards;
-        }
-        .heart-3d {
-          perspective: 800px;
-        }
-        .heart-3d:hover {
-          transform: scale(1.15) rotateX(15deg) rotateZ(-5deg);
-          text-shadow: 0 8px 16px rgba(0,0,0,0.4), 0 0 30px rgba(255,0,0,0.8);
-          filter: drop-shadow(0 0 20px rgba(255,0,0,0.8));
-        }
-      `}</style>
     </div>
   );
 }
