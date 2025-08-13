@@ -7,6 +7,7 @@ export default function LikePage() {
   const user = useRecoilValue(userAtom);
   const [hearts, setHearts] = useState<{ id: number }[]>([]);
   const [isRed, setIsRed] = useState(false);
+  const [rotationClass, setRotationClass] = useState("");
   const heartRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
@@ -22,12 +23,12 @@ export default function LikePage() {
       const clickX = e.clientX - rect.left;
 
       if (clickX > rect.width / 2) {
-        heartRef.current.classList.add("rotate-y");
-        setTimeout(() => heartRef.current?.classList.remove("rotate-y"), 400);
+        setRotationClass("rotate-y-right");
       } else {
-        heartRef.current.classList.add("rotate-y-left");
-        setTimeout(() => heartRef.current?.classList.remove("rotate-y-left"), 400);
+        setRotationClass("rotate-y-left");
       }
+
+      setTimeout(() => setRotationClass(""), 500);
     }
 
     setIsRed(true);
@@ -48,9 +49,9 @@ export default function LikePage() {
 
       <div
         ref={heartRef}
-        className={`heart-3d text-9xl cursor-pointer select-none transition-all duration-300 ${
+        className={`heart-3d text-9xl cursor-pointer select-none inline-block transition-all duration-300 ${
           isRed ? "text-red-500" : "text-white"
-        } drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]`}
+        } drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] ${rotationClass}`}
         onClick={handleLike}
       >
         ❤
